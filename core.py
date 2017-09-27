@@ -1,9 +1,12 @@
 class MoneyItem:
 
-    def __init__(self, amount = 0, repeats = false, repeat_period = None, label = ""):
-        self.amount = amount
-        self.repeats = repeats
-        self.repeat_period = repeat_period
+    def __init__(self, amount = 0, repeats = False, repeat_period = None, label = ''):
+        self.amount = int(amount)
+        self.repeats = bool(repeats)
+        if self.repeats:
+            self.repeat_period = repeat_period
+        else:
+            self.repeat_period = None
         self.label = label
 
     def modify_amount(self, new_amount):
@@ -19,9 +22,13 @@ class Finances:
         self.next_key = 0
         self.year_budget = 0
 
-    def add_item(self, new_item):
-        self.money_items[next_key] = new_item
-        self.next_key++
+    def add_item(self, new_item, key = None):
+        if key is not None:
+            self.next_key = int(key)
+        if self.next_key in self.money_items.keys():
+            self.next_key = max(self.money_items.keys()) + 1
+        self.money_items[self.next_key] = new_item
+        self.next_key += 1
 
     def calculate_yearly(self):
         budget = 0
@@ -39,10 +46,21 @@ class Finances:
         return budget
 
     def calculate_monthly(self):
-        return calculate_yearly(self)/12
+        return self.calculate_yearly()/12
 
     def calculate_weekly(self):
-        return calculate_yearly(self)/52
+        return self.calculate_yearly()/52
 
     def update(self):
         self.year_budget = self.calculate_yearly()
+
+    def print_summary(self):
+        for key in self.money_items:
+            item = self.money_items[key]
+            print('({}) {}'.format(key, item.label))
+            print('\tAmount: {:.2f}'.format(item.amount))
+            if item.repeats:
+                print('\tEvery: {}'.format(item.repeat_period))
+            print()
+        print('Monthly budget: {:.2f}'.format(self.calculate_monthly()))
+        print('Weekly budget: {:.2f}'.format(self.calculate_weekly()))

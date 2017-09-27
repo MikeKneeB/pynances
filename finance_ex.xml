@@ -1,0 +1,14 @@
+<finance name='test'>
+    <item key='0'>
+        <amount>100</amount>
+        <repeats>True</repeats>
+        <repeat_period>month</repeat_period>
+        <label>Whee</label>
+    </item>
+    <item key = '1'>
+        <amount>-200</amount>
+        <repeats>False</repeats>
+        <repeat_period>year</repeat_period>
+        <label>OHNO</label>
+    </item>
+</finance>
