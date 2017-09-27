@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 
 if __name__ == '__main__':
     my_fin = core.Finances()
-    xtree = ET.parse('finance_ex.xml')
+    xtree = ET.parse('/home/mikek/Documents/finance.xml')
     xroot = xtree.getroot()
     for child in xroot:
         money_item_dict = {}

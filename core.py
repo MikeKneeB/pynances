@@ -1,7 +1,7 @@
 class MoneyItem:
 
     def __init__(self, amount = 0, repeats = False, repeat_period = None, label = ''):
-        self.amount = int(amount)
+        self.amount = float(amount)
         self.repeats = bool(repeats)
         if self.repeats:
             self.repeat_period = repeat_period
