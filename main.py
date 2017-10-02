@@ -18,7 +18,17 @@ def add_to_finances(finances):
     finances.add_item(new_item)
 
 def remove_from_finances(finances):
-    pass
+    choice = None
+    while choice is None:
+        try:
+            choice = int(input('Please enter the key number of the item you wish to remove: '))
+        except Exception as e:
+            print('Please make a valid choice.')
+            choice = None
+        if choice is not in finances.money_items.keys():
+            choice = None
+            print('Please make a valid choice.')
+    finances.money_items.pop(choice)
 
 def menu_choice(up_to):
     choice = None
@@ -91,7 +101,16 @@ if __name__ == '__main__':
                 else:
                     working_finances = working_finances_temp
             elif choice == 2:
+                working_finances_temp = working_finances
                 remove_from_finances(working_finances)
+                working_finances.update()
+                working_finances.print_summary()
+                print('\nEnter 1 to save changes, 2 to discard.')
+                choice = menu_choice(2)
+                if choice == 1:
+                    core.write_to_xml(args.finance_file, working_finances)
+                else:
+                    working_finances = working_finances_temp
             elif choice == 3:
                 running = False
     else:
