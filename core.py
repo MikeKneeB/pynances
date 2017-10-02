@@ -1,3 +1,5 @@
+import xml.etree.ElementTree as ET
+
 class MoneyItem:
 
     def __init__(self, amount = 0, repeats = False, repeat_period = None, label = ''):

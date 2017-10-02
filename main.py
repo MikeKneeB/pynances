@@ -1,6 +1,5 @@
 import core
 
-import xml.etree.ElementTree as ET
 import argparse
 
 parser = argparse.ArgumentParser(description = 'REEEE')
