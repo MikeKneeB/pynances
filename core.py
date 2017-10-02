@@ -77,7 +77,7 @@ def load_from_xml(xml_file, finances):
         money_item_dict['key'] = int(child.attrib['key'])
         for subchild in child:
             money_item_dict[subchild.tag] = subchild.text
-        finances.add_item(core.MoneyItem(money_item_dict['amount'],
+        finances.add_item(MoneyItem(money_item_dict['amount'],
                             money_item_dict['repeats'],
                             money_item_dict['repeat_period'],
                             money_item_dict['label']), money_item_dict['key'])
