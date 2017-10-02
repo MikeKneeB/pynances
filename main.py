@@ -10,6 +10,7 @@ parser.add_argument('finance_file', type = str, nargs = '?',
 def load_from_xml(xml_file, finances):
     xtree = ET.parse(xml_file)
     xroot = xtree.getroot()
+    finances.name = xroot.attrib['name']
     for child in xroot:
         money_item_dict = {}
         money_item_dict['key'] = int(child.attrib['key'])
@@ -21,17 +22,34 @@ def load_from_xml(xml_file, finances):
                             money_item_dict['label']), money_item_dict['key'])
 
 def write_to_xml(xml_file, finances):
-    pass
+    xroot = ET.Element('finance', attrib = {'name': finances.name})
+    for key in finances.money_items.keys():
+        temp_element = ET.Element('item', attrib = {'key': str(key)})
+        temp_sub_element = ET.Element('amount')
+        temp_sub_element.text = str(finances.money_items[key].amount)
+        temp_element.append(temp_sub_element)
+        temp_sub_element = ET.Element('repeats')
+        temp_sub_element.text = str(finances.money_items[key].repeats)
+        temp_element.append(temp_sub_element)
+        temp_sub_element = ET.Element('repeat_period')
+        temp_sub_element.text = str(finances.money_items[key].repeat_period)
+        temp_element.append(temp_sub_element)
+        temp_sub_element = ET.Element('label')
+        temp_sub_element.text = str(finances.money_items[key].label)
+        temp_element.append(temp_sub_element)
+        xroot.append(temp_element)
+    xtree = ET.ElementTree(element = xroot)
+    xtree.write(xml_file)
 
 def add_to_finances(finances):
     label = input('\nPlease enter a label for the new item: ')
     amount = get_float(text = 'Please enter an amount in pounds: ')
     repeats = False if input('Enter "n" for no repeat, anything else for repeating: ') == 'n' else True
-    if repeats = True:
+    if repeats:
         repeat_period = get_repeat_period()
     else:
         repeat_period = None
-    new_item = Item(amount, repeats, repeat_period, label)
+    new_item = core.MoneyItem(amount, repeats, repeat_period, label)
     finances.add_item(new_item)
 
 def remove_from_finances(finances):
@@ -55,12 +73,12 @@ def get_repeat_period():
     while period is None:
         try:
             period = input('Please enter y, m or w for yearly repeat, monthly repeat or weekly repeat: ')
-            if period == 'y'
+            if period == 'y':
                 period = 'year'
             elif period == 'm':
                 period = 'month'
             elif period == 'w':
-                period == 'week'
+                period = 'week'
             else:
                 print('Please enter a valid option.')
                 period = None
@@ -79,6 +97,8 @@ def get_float(text = None):
             flo = None
     return flo
 
+def main_loop(working_finances):
+    pass
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -110,4 +130,14 @@ if __name__ == '__main__':
             elif choice == 3:
                 running = False
     else:
-        pass
+        print('What would you like to do?')
+        print('\t(1) Create new finances file')
+        print('\t(2) Load finances file')
+        print('\t(3) Quit')
+        choice = menu_choice(3)
+        if choice == 1:
+            pass
+        elif choice == 2:
+            pass
+        elif choice == 3:
+            pass

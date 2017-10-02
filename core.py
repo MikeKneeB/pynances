@@ -21,6 +21,7 @@ class Finances:
         self.money_items = {}
         self.next_key = 0
         self.year_budget = 0
+        self.name = None
 
     def add_item(self, new_item, key = None):
         if key is not None:

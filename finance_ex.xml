@@ -1,14 +1,1 @@
-<finance name='test'>
-    <item key='0'>
-        <amount>100</amount>
-        <repeats>True</repeats>
-        <repeat_period>month</repeat_period>
-        <label>Whee</label>
-    </item>
-    <item key = '1'>
-        <amount>-200</amount>
-        <repeats>False</repeats>
-        <repeat_period>year</repeat_period>
-        <label>OHNO</label>
-    </item>
-</finance>
+<finance name="test"><item key="0"><amount>100.0</amount><repeats>True</repeats><repeat_period>month</repeat_period><label>Whee</label></item><item key="1"><amount>-200.0</amount><repeats>True</repeats><repeat_period>year</repeat_period><label>OHNO</label></item><item key="2"><amount>-20.0</amount><repeats>True</repeats><repeat_period>week</repeat_period><label>test</label></item><item key="3"><amount>60.0</amount><repeats>True</repeats><repeat_period>week</repeat_period><label>test2</label></item></finance>
