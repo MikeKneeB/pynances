@@ -7,40 +7,6 @@ parser = argparse.ArgumentParser(description = 'REEEE')
 parser.add_argument('finance_file', type = str, nargs = '?',
                     help = 'File location for an exisitng finances file.')
 
-def load_from_xml(xml_file, finances):
-    xtree = ET.parse(xml_file)
-    xroot = xtree.getroot()
-    finances.name = xroot.attrib['name']
-    for child in xroot:
-        money_item_dict = {}
-        money_item_dict['key'] = int(child.attrib['key'])
-        for subchild in child:
-            money_item_dict[subchild.tag] = subchild.text
-        finances.add_item(core.MoneyItem(money_item_dict['amount'],
-                            money_item_dict['repeats'],
-                            money_item_dict['repeat_period'],
-                            money_item_dict['label']), money_item_dict['key'])
-
-def write_to_xml(xml_file, finances):
-    xroot = ET.Element('finance', attrib = {'name': finances.name})
-    for key in finances.money_items.keys():
-        temp_element = ET.Element('item', attrib = {'key': str(key)})
-        temp_sub_element = ET.Element('amount')
-        temp_sub_element.text = str(finances.money_items[key].amount)
-        temp_element.append(temp_sub_element)
-        temp_sub_element = ET.Element('repeats')
-        temp_sub_element.text = str(finances.money_items[key].repeats)
-        temp_element.append(temp_sub_element)
-        temp_sub_element = ET.Element('repeat_period')
-        temp_sub_element.text = str(finances.money_items[key].repeat_period)
-        temp_element.append(temp_sub_element)
-        temp_sub_element = ET.Element('label')
-        temp_sub_element.text = str(finances.money_items[key].label)
-        temp_element.append(temp_sub_element)
-        xroot.append(temp_element)
-    xtree = ET.ElementTree(element = xroot)
-    xtree.write(xml_file)
-
 def add_to_finances(finances):
     label = input('\nPlease enter a label for the new item: ')
     amount = get_float(text = 'Please enter an amount in pounds: ')
@@ -104,7 +70,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     working_finances = core.Finances()
     if args.finance_file is not None:
-        load_from_xml(args.finance_file, working_finances)
+        core.load_from_xml(args.finance_file, working_finances)
         working_finances.update()
         running = True
         while running:
@@ -122,7 +88,7 @@ if __name__ == '__main__':
                 print('\nEnter 1 to save changes, 2 to discard.')
                 choice = menu_choice(2)
                 if choice == 1:
-                    write_to_xml(args.finance_file, working_finances)
+                    core.write_to_xml(args.finance_file, working_finances)
                 else:
                     working_finances = working_finances_temp
             elif choice == 2:

@@ -65,3 +65,37 @@ class Finances:
             print()
         print('Monthly budget: {:.2f}'.format(self.calculate_monthly()))
         print('Weekly budget: {:.2f}'.format(self.calculate_weekly()))
+
+def load_from_xml(xml_file, finances):
+    xtree = ET.parse(xml_file)
+    xroot = xtree.getroot()
+    finances.name = xroot.attrib['name']
+    for child in xroot:
+        money_item_dict = {}
+        money_item_dict['key'] = int(child.attrib['key'])
+        for subchild in child:
+            money_item_dict[subchild.tag] = subchild.text
+        finances.add_item(core.MoneyItem(money_item_dict['amount'],
+                            money_item_dict['repeats'],
+                            money_item_dict['repeat_period'],
+                            money_item_dict['label']), money_item_dict['key'])
+
+def write_to_xml(xml_file, finances):
+    xroot = ET.Element('finance', attrib = {'name': finances.name})
+    for key in finances.money_items.keys():
+        temp_element = ET.Element('item', attrib = {'key': str(key)})
+        temp_sub_element = ET.Element('amount')
+        temp_sub_element.text = str(finances.money_items[key].amount)
+        temp_element.append(temp_sub_element)
+        temp_sub_element = ET.Element('repeats')
+        temp_sub_element.text = str(finances.money_items[key].repeats)
+        temp_element.append(temp_sub_element)
+        temp_sub_element = ET.Element('repeat_period')
+        temp_sub_element.text = str(finances.money_items[key].repeat_period)
+        temp_element.append(temp_sub_element)
+        temp_sub_element = ET.Element('label')
+        temp_sub_element.text = str(finances.money_items[key].label)
+        temp_element.append(temp_sub_element)
+        xroot.append(temp_element)
+    xtree = ET.ElementTree(element = xroot)
+    xtree.write(xml_file)
