@@ -120,7 +120,8 @@ if __name__ == '__main__':
         print('\t(3) Quit')
         choice = menu_choice(3)
         if choice == 1:
-            pass
+            new_name = input('\nPlease enter a new name for the finances file: ')
+            working_finances = core.Finances(name = new_name)
         elif choice == 2:
             pass
         elif choice == 3:

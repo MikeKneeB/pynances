@@ -19,7 +19,7 @@ class MoneyItem:
 
 class Finances:
 
-    def __init__(self):
+    def __init__(self, name = None):
         self.money_items = {}
         self.next_key = 0
         self.year_budget = 0
