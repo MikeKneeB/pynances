@@ -1,6 +1,6 @@
 import core
 
-import argparse
+import argparse, os
 
 parser = argparse.ArgumentParser(description = 'REEEE')
 parser.add_argument('finance_file', type = str, nargs = '?',
@@ -72,8 +72,39 @@ def get_float(text = None):
             flo = None
     return flo
 
-def main_loop(working_finances):
-    pass
+def main_loop(working_finances, file_name):
+    running = True
+    while running:
+        working_finances.print_summary()
+        print('\nWhat would you like to do?')
+        print('\t(1) Add finance item')
+        print('\t(2) Remove finance item')
+        print('\t(3) Quit')
+        choice = menu_choice(3)
+        if choice == 1:
+            working_finances_temp = working_finances
+            add_to_finances(working_finances)
+            working_finances.update()
+            working_finances.print_summary()
+            print('\nEnter 1 to save changes, 2 to discard.')
+            choice = menu_choice(2)
+            if choice == 1:
+                core.write_to_xml(file_name, working_finances)
+            else:
+                working_finances = working_finances_temp
+        elif choice == 2:
+            working_finances_temp = working_finances
+            remove_from_finances(working_finances)
+            working_finances.update()
+            working_finances.print_summary()
+            print('\nEnter 1 to save changes, 2 to discard.')
+            choice = menu_choice(2)
+            if choice == 1:
+                core.write_to_xml(file_name, working_finances)
+            else:
+                working_finances = working_finances_temp
+        elif choice == 3:
+            running = False
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -81,48 +112,31 @@ if __name__ == '__main__':
     if args.finance_file is not None:
         core.load_from_xml(args.finance_file, working_finances)
         working_finances.update()
+        main_loop(working_finances, args.finance_file)
+    else:
         running = True
         while running:
-            working_finances.print_summary()
-            print('\nWhat would you like to do?')
-            print('\t(1) Add finance item')
-            print('\t(2) Remove finance item')
+            print('What would you like to do?')
+            print('\t(1) Create new finances file')
+            print('\t(2) Load finances file')
             print('\t(3) Quit')
             choice = menu_choice(3)
             if choice == 1:
-                working_finances_temp = working_finances
-                add_to_finances(working_finances)
+                new_name = input('\nPlease enter a new name for the finances: ')
+                working_finances = core.Finances(name = new_name)
+                file_name = str(new_name.replace(' ', '_') + '.xml')
+                with open(file_name, 'a'):
+                    os.utime(file_name)
                 working_finances.update()
-                working_finances.print_summary()
-                print('\nEnter 1 to save changes, 2 to discard.')
-                choice = menu_choice(2)
-                if choice == 1:
-                    core.write_to_xml(args.finance_file, working_finances)
-                else:
-                    working_finances = working_finances_temp
+                main_loop(working_finances, file_name)
             elif choice == 2:
-                working_finances_temp = working_finances
-                remove_from_finances(working_finances)
-                working_finances.update()
-                working_finances.print_summary()
-                print('\nEnter 1 to save changes, 2 to discard.')
-                choice = menu_choice(2)
-                if choice == 1:
-                    core.write_to_xml(args.finance_file, working_finances)
-                else:
-                    working_finances = working_finances_temp
+                file_name = str(input('\nPlease enter the file name for the finances file: '))
+                working_finances = core.Finances()
+                try:
+                    core.load_from_xml(file_name, working_finances)
+                    working_finances.update()
+                    main_loop(working_finances, file_name)
+                except FileNotFoundError as e:
+                    print('No such file.')
             elif choice == 3:
                 running = False
-    else:
-        print('What would you like to do?')
-        print('\t(1) Create new finances file')
-        print('\t(2) Load finances file')
-        print('\t(3) Quit')
-        choice = menu_choice(3)
-        if choice == 1:
-            new_name = input('\nPlease enter a new name for the finances file: ')
-            working_finances = core.Finances(name = new_name)
-        elif choice == 2:
-            pass
-        elif choice == 3:
-            pass
