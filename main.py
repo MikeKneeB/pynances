@@ -89,7 +89,7 @@ def main_loop(working_finances, file_name):
             print('\nEnter 1 to save changes, 2 to discard.')
             choice = menu_choice(2)
             if choice == 1:
-                core.write_to_xml(file_name, working_finances)
+                core.write_to_yaml(file_name, working_finances)
             else:
                 working_finances = working_finances_temp
         elif choice == 2:
@@ -100,7 +100,7 @@ def main_loop(working_finances, file_name):
             print('\nEnter 1 to save changes, 2 to discard.')
             choice = menu_choice(2)
             if choice == 1:
-                core.write_to_xml(file_name, working_finances)
+                core.write_to_yaml(file_name, working_finances)
             else:
                 working_finances = working_finances_temp
         elif choice == 3:
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     working_finances = core.Finances()
     if args.finance_file is not None:
-        core.load_from_xml(args.finance_file, working_finances)
+        core.load_from_yaml(args.finance_file, working_finances)
         working_finances.update()
         main_loop(working_finances, args.finance_file)
     else:
@@ -124,7 +124,7 @@ if __name__ == '__main__':
             if choice == 1:
                 new_name = input('\nPlease enter a new name for the finances: ')
                 working_finances = core.Finances(name = new_name)
-                file_name = str(new_name.replace(' ', '_') + '.xml')
+                file_name = str(new_name.replace(' ', '_') + '.yaml')
                 with open(file_name, 'a'):
                     os.utime(file_name)
                 working_finances.update()
@@ -133,7 +133,7 @@ if __name__ == '__main__':
                 file_name = str(input('\nPlease enter the file name for the finances file: '))
                 working_finances = core.Finances()
                 try:
-                    core.load_from_xml(file_name, working_finances)
+                    core.load_from_yaml(file_name, working_finances)
                     working_finances.update()
                     main_loop(working_finances, file_name)
                 except FileNotFoundError as e:
