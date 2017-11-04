@@ -86,11 +86,10 @@ def load_from_xml(xml_file, finances):
 def load_from_yaml(yaml_file, finances):
     with open(yaml_file, 'r') as _file:
         yaml_obj = yaml.load(_file)
-        print(yaml_obj)
     if len(yaml_obj.keys()) != 1:
         print('This doesn\'t look right.')
     else:
-        finances.name = yaml_obj.keys()[0]
+        finances.name = list(yaml_obj.keys())[0]
         for key, item in yaml_obj[finances.name].items():
             id_no = int(key)
             amount = item['amount']
@@ -127,4 +126,5 @@ def write_to_yaml(yaml_file, finances):
                                             'repeats': item.repeats,
                                             'repeat_period': item.repeat_period,
                                             'label': item.label}
-        yaml.dump(yaml_obj, yaml_file)
+    with open(yaml_file, 'w') as _file:
+        _file.write(yaml.dump(yaml_obj))
