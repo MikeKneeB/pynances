@@ -12,12 +12,6 @@ class MoneyItem:
             self.repeat_period = None
         self.label = label
 
-    def modify_amount(self, new_amount):
-        self.amount = new_amount
-
-    def modify_label(self, new_label):
-        self.label = new_label
-
 class Finances:
 
     def __init__(self, name = None):
@@ -68,6 +62,18 @@ class Finances:
             print()
         print('Monthly budget: {:.2f}'.format(self.calculate_monthly()))
         print('Weekly budget: {:.2f}'.format(self.calculate_weekly()))
+
+    def string_summary(self):
+        ret_str = ''
+        for key in self.money_items:
+            item = self.money_items[key]
+            ret_str += '({}) {}\n'.format(key, item.label)
+            ret_str += '\tAmount: {:.2f}\n'.format(item.amount)
+            if item.repeats:
+                ret_str += '\tEvery: {}\n\n'.format(item.repeat_period)
+        ret_str += 'Monthly budget: {:.2f}\n'.format(self.calculate_monthly())
+        ret_str += 'Weekly budget: {:.2f}'.format(self.calculate_weekly())
+        return ret_str
 
 def load_from_xml(xml_file, finances):
     xtree = ET.parse(xml_file)
