@@ -15,23 +15,19 @@ class MoneyItem:
 class Finances:
 
     def __init__(self, name = None):
-        self.money_items = {}
-        self.next_key = 0
+        self.money_items = []
         self.year_budget = 0
         self.name = name
 
-    def add_item(self, new_item, key = None):
-        if key is not None:
-            self.next_key = int(key)
-        if self.next_key in self.money_items.keys():
-            self.next_key = max(self.money_items.keys()) + 1
-        self.money_items[self.next_key] = new_item
-        self.next_key += 1
+    def add_item(self, new_item):
+        self.money_items.append(new_item)
+
+    def remove_item(self, index):
+        self.money_items.pop(index)
 
     def calculate_yearly(self):
         budget = 0
-        for key in self.money_items:
-            item = self.money_items[key]
+        for item in self.money_items:
             if item.repeats:
                 if item.repeat_period == 'day':
                     budget += item.amount*365
@@ -53,8 +49,7 @@ class Finances:
         self.year_budget = self.calculate_yearly()
 
     def print_summary(self):
-        for key in self.money_items:
-            item = self.money_items[key]
+        for key, item in enumerate(self.money_items):
             print('({}) {}'.format(key, item.label))
             print('\tAmount: {:.2f}'.format(item.amount))
             if item.repeats:
@@ -65,7 +60,7 @@ class Finances:
 
     def string_summary(self):
         ret_str = ''
-        for key in self.money_items:
+        for key, item in enumerate(self.money_items):
             item = self.money_items[key]
             ret_str += '({}) {}\n'.format(key, item.label)
             ret_str += '\tAmount: {:.2f}\n'.format(item.amount)
@@ -75,20 +70,6 @@ class Finances:
         ret_str += 'Weekly budget: {:.2f}'.format(self.calculate_weekly())
         return ret_str
 
-def load_from_xml(xml_file, finances):
-    xtree = ET.parse(xml_file)
-    xroot = xtree.getroot()
-    finances.name = xroot.attrib['name']
-    for child in xroot:
-        money_item_dict = {}
-        money_item_dict['key'] = int(child.attrib['key'])
-        for subchild in child:
-            money_item_dict[subchild.tag] = subchild.text
-        finances.add_item(MoneyItem(money_item_dict['amount'],
-                            money_item_dict['repeats'],
-                            money_item_dict['repeat_period'],
-                            money_item_dict['label']), money_item_dict['key'])
-
 def load_from_yaml(yaml_file, finances):
     with open(yaml_file, 'r') as _file:
         yaml_obj = yaml.load(_file)
@@ -97,12 +78,11 @@ def load_from_yaml(yaml_file, finances):
     else:
         finances.name = list(yaml_obj.keys())[0]
         for key, item in yaml_obj[finances.name].items():
-            id_no = int(key)
             amount = item['amount']
             repeats = item['repeats']
             repeat_period = item['repeat_period']
             label = item['label']
-            finances.add_item(MoneyItem(amount, repeats, repeat_period, label), id_no)
+            finances.add_item(MoneyItem(amount, repeats, repeat_period, label))
 
 def write_to_xml(xml_file, finances):
     xroot = ET.Element('finance', attrib = {'name': finances.name})
@@ -127,7 +107,7 @@ def write_to_xml(xml_file, finances):
 def write_to_yaml(yaml_file, finances):
     yaml_obj = {}
     yaml_obj[finances.name] = {}
-    for key, item in finances.money_items.items():
+    for key, item in enumerate(finances.money_items):
         yaml_obj[finances.name][str(key)] = {'amount': item.amount,
                                             'repeats': item.repeats,
                                             'repeat_period': item.repeat_period,

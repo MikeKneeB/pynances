@@ -25,7 +25,7 @@ def remove_from_finances(finances):
         except Exception as e:
             print('Please make a valid choice.')
             choice = None
-        if choice not in finances.money_items.keys():
+        if choice not in range(len(finances.money_items))s:
             choice = None
             print('Please make a valid choice.')
     finances.money_items.pop(choice)
