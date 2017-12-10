@@ -1,5 +1,5 @@
 import core
-import os, curses, argparse
+import os, curses, argparse, math
 
 parser = argparse.ArgumentParser(description = 'REEEE')
 parser.add_argument('finance_file', type = str, nargs = '?',
@@ -43,6 +43,9 @@ def main(stdscr):
             display_window.decrement_selection()
             display_window.draw_finances()
 
+def round_to_factor(x, base):
+    return int(base * math.floor(x/base))
+
 class DisplayWindow(object):
 
     def __init__(self, finances):
@@ -56,9 +59,11 @@ class DisplayWindow(object):
         self.title_win.addch(curses.LINES - 5, 0, curses.ACS_LTEE)
         self.title_win.addch(curses.LINES - 5, curses.COLS - 2, curses.ACS_RTEE)
         self.finances = finances
-        self.recurring_display_pad = curses.newpad(len(self.finances.money_items) * 4, self.middle - 1)
-        self.spending_display_pad = curses.newpad(10, self.middle - 1)
+        self.finance_display_pad = curses.newpad(len(self.finances.money_items) * 4, self.middle - 1)
+        self.budget_display_pad = curses.newpad(20, self.middle - 1)
         self.selected_index = 0
+        self.top_of_page = 0
+        self.bottom_of_page = self.top_of_page + curses.LINES - 6
 
     def draw_title(self):
         self.title_win.addstr(0, 1, self.finances.name)
@@ -67,24 +72,34 @@ class DisplayWindow(object):
     def draw_finances(self):
         line_count = 1
         for key, item in enumerate(self.finances.money_items):
-            if item.repeats:
+            if item.repeats and not item.hidden:
                 if key == self.selected_index:
-                    self.recurring_display_pad.addstr(line_count, 1, '> ({})'.format(key))
+                    self.finance_display_pad.addstr(line_count, 1, '> ({})'.format(key))
                 else:
-                    self.recurring_display_pad.addstr(line_count, 1, '  ({})'.format(key))
+                    self.finance_display_pad.addstr(line_count, 1, '  ({})'.format(key))
                 if item.amount < 0:
-                    self.recurring_display_pad.addstr(' {}'.format(item.label), curses.color_pair(2))
+                    self.finance_display_pad.addstr(' {}'.format(item.label), curses.color_pair(2))
                 else:
-                    self.recurring_display_pad.addstr(' {}'.format(item.label), curses.color_pair(3))
+                    self.finance_display_pad.addstr(' {}'.format(item.label), curses.color_pair(3))
                 line_count += 1
-                self.recurring_display_pad.addstr(line_count, 3,'\tEvery:\t{}'.format(item.repeat_period))
+                self.finance_display_pad.addstr(line_count, 3,'\tEvery:\t{}'.format(item.repeat_period))
                 line_count += 1
-                self.recurring_display_pad.addstr(line_count, 3, '\tAmount:\t{:.2f}'.format(item.amount))
+                self.finance_display_pad.addstr(line_count, 3, '\tAmount:\t{:.2f}'.format(item.amount))
                 line_count += 2
-        self.recurring_display_pad.refresh(0, 0, 1, 1, curses.LINES - 5, curses.COLS - 3)
+        if (self.selected_index + 1) * 4 > self.bottom_of_page:
+            self.top_of_page += 4
+            self.bottom_of_page += 4
+        elif (self.selected_index) * 4 < self.top_of_page:
+            self.top_of_page -= 4
+            self.bottom_of_page -= 4
+        self.finance_display_pad.refresh(self.top_of_page, 0, 1, 1, round_to_factor(curses.LINES - 6, 4), curses.COLS - 3)
 
     def draw_budget(self):
-        self.spending_display_pad.refresh(0, 0, 1, self.middle + 1, curses.LINES - 5, curses.COLS - 3)
+        self.budget_display_pad.addstr(1, 2, 'Monthly Budget: ', curses.A_BOLD)
+        self.budget_display_pad.addstr('{:.2f}'.format(self.finances.calculate_monthly()))
+        self.budget_display_pad.addstr(3, 2, 'Weekly Budget: ', curses.A_BOLD)
+        self.budget_display_pad.addstr('{:.2f}'.format(self.finances.calculate_weekly()))
+        self.budget_display_pad.refresh(0, 0, 1, self.middle + 1, curses.LINES - 5, curses.COLS - 3)
 
     def increment_selection(self):
         if self.selected_index == len(self.finances.money_items) - 1:
@@ -110,7 +125,7 @@ class CommandWindow(object):
         self.number_of_command_pages = 0
         self._commands_finance = (('  a ', 'add'), ('  d ', 'delete'), ('  l ', 'load'),
                         ('  s ', 'save'), ('  n ', 'new'), ('TAB ', 'change view'),
-                        ('  k ', 'up'), ('  j ', 'down'))
+                        ('  k ', 'up'), ('  j ', 'down'), ('  h ', 'hidden'))
         self._commands_budget = ()
         self._commands = self._commands_finance
         self._command_width = 15

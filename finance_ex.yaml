@@ -1,3 +1,11 @@
 test:
-  '0': {amount: 100.0, label: Whee, repeat_period: month, repeats: true}
-  '1': {amount: -200.0, label: OHNO, repeat_period: year, repeats: true}
+  1: {amount: -200.0, label: OHNO, repeat_period: year, repeats: true, hidden: false, scope: [year, 2017]}
+  0: {amount: 100.0, label: Whee, repeat_period: month, repeats: true, hidden: false, scope: [year, 2017]}
+  2: {amount: 10, label: Help, repeat_period: week, repeats: true, hidden: false, scope: [year, 2017]}
+  3: {amount: 10, label: Help, repeat_period: week, repeats: true, hidden: false, scope: [year, 2017]}
+  4: {amount: 10, label: Help, repeat_period: week, repeats: true, hidden: false, scope: [year, 2017]}
+  5: {amount: 10, label: Help, repeat_period: week, repeats: true, hidden: false, scope: [year, 2017]}
+  6: {amount: 10, label: Help, repeat_period: week, repeats: true, hidden: false, scope: [year, 2017]}
+  7: {amount: 10, label: Help, repeat_period: week, repeats: true, hidden: false, scope: [year, 2017]}
+  8: {amount: 10, label: Help, repeat_period: week, repeats: true, hidden: false, scope: [year, 2017]}
+  9: {amount: 50, label: no, repeat_period: None, repeats: false, hidden: false, scope: [year, 2017]}

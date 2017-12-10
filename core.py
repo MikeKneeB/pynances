@@ -1,9 +1,10 @@
 import xml.etree.ElementTree as ET
 import yaml
+import datetime
 
 class MoneyItem:
 
-    def __init__(self, amount = 0, repeats = False, repeat_period = None, label = ''):
+    def __init__(self, amount = 0, repeats = False, repeat_period = None, label = '', scope = None, hidden = False):
         self.amount = float(amount)
         self.repeats = bool(repeats)
         if self.repeats:
@@ -11,6 +12,8 @@ class MoneyItem:
         else:
             self.repeat_period = None
         self.label = label
+        self.scope = scope
+        self.hidden = hidden
 
 class Finances:
 
@@ -45,27 +48,65 @@ class Finances:
     def calculate_weekly(self):
         return self.calculate_yearly()/52
 
+    def remaining_month(self):
+        total = 0
+        for item in self.money_items:
+            if not item.repeats and item.scope[0] == 'month':
+                total += items
+        return self.calculate_monthly() - total
+
+    def remaining_week(self):
+        total = 0
+        for item in self.money_items:
+            if not item.repeats and item.scope[0] == 'week':
+                total += money_items
+        return self.calculate_weekly() - total
+
+    def sum_extra(self):
+        total = 0
+        for item in self.money_items:
+            if not item.repeats:
+                total += item.amount
+        return total
+
+    def clear_old_items(self):
+        today = datetime.date.today()
+        week_number = today.isocalendar()[1]
+        month_number = today.month
+        year_number = today.year
+        for item in self.money_items:
+            if item.scope[0] == 'week':
+                if item.scope[1] != week_number:
+                    self.money_items.remove(item)
+            elif item.scope[0] == 'month':
+                if item.scope[1] != month_number:
+                    self.money_items.remove(item)
+            elif item.scope[0] == 'year':
+                if item.scope[1] != year_number:
+                    self.money_items.remove(item)
+
     def update(self):
         self.year_budget = self.calculate_yearly()
 
     def print_summary(self):
         for key, item in enumerate(self.money_items):
-            print('({}) {}'.format(key, item.label))
-            print('\tAmount: {:.2f}'.format(item.amount))
-            if item.repeats:
-                print('\tEvery: {}'.format(item.repeat_period))
-            print()
+            if not item.hidden:
+                print('({}) {}'.format(key, item.label))
+                print('\tAmount: {:.2f}'.format(item.amount))
+                if item.repeats:
+                    print('\tEvery: {}'.format(item.repeat_period))
+                print()
         print('Monthly budget: {:.2f}'.format(self.calculate_monthly()))
         print('Weekly budget: {:.2f}'.format(self.calculate_weekly()))
 
     def string_summary(self):
         ret_str = ''
         for key, item in enumerate(self.money_items):
-            item = self.money_items[key]
-            ret_str += '({}) {}\n'.format(key, item.label)
-            ret_str += '\tAmount: {:.2f}\n'.format(item.amount)
-            if item.repeats:
-                ret_str += '\tEvery: {}\n\n'.format(item.repeat_period)
+            if not item.hidden:
+                ret_str += '({}) {}\n'.format(key, item.label)
+                ret_str += '\tAmount: {:.2f}\n'.format(item.amount)
+                if item.repeats:
+                    ret_str += '\tEvery: {}\n\n'.format(item.repeat_period)
         ret_str += 'Monthly budget: {:.2f}\n'.format(self.calculate_monthly())
         ret_str += 'Weekly budget: {:.2f}'.format(self.calculate_weekly())
         return ret_str
@@ -82,7 +123,9 @@ def load_from_yaml(yaml_file, finances):
             repeats = item['repeats']
             repeat_period = item['repeat_period']
             label = item['label']
-            finances.add_item(MoneyItem(amount, repeats, repeat_period, label))
+            hidden = item['hidden']
+            scope = item['scope']
+            finances.add_item(MoneyItem(amount, repeats, repeat_period, label, scope, hidden))
 
 def write_to_xml(xml_file, finances):
     xroot = ET.Element('finance', attrib = {'name': finances.name})
@@ -111,6 +154,8 @@ def write_to_yaml(yaml_file, finances):
         yaml_obj[finances.name][str(key)] = {'amount': item.amount,
                                             'repeats': item.repeats,
                                             'repeat_period': item.repeat_period,
-                                            'label': item.label}
+                                            'label': item.label,
+                                            'hidden': item.hidden,
+                                            'scope': item.scope}
     with open(yaml_file, 'w') as _file:
         _file.write(yaml.dump(yaml_obj))
