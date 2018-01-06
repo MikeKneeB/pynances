@@ -42,6 +42,14 @@ def main(stdscr):
         elif inp == 'KEY_UP' or inp == 'k':
             display_window.decrement_selection()
             display_window.draw_finances()
+        elif inp == 'KEY_RESIZE':
+            curses.LINES, curses.COLS = stdscr.getmaxyx()
+            display_window.resize()
+            command_window.resize()
+            # display_window = DisplayWindow(working_finances)
+            # command_window = CommandWindow(working_finances)
+            stdscr.refresh()
+
 
 def round_to_factor(x, base):
     return int(base * math.floor(x/base))
@@ -59,8 +67,8 @@ class DisplayWindow(object):
         self.title_win.addch(curses.LINES - 5, 0, curses.ACS_LTEE)
         self.title_win.addch(curses.LINES - 5, curses.COLS - 2, curses.ACS_RTEE)
         self.finances = finances
-        self.finance_display_pad = curses.newpad(len(self.finances.money_items) * 4, self.middle - 1)
-        self.budget_display_pad = curses.newpad(20, self.middle - 1)
+        self.finance_display_pad = curses.newpad(len([x for x in self.finances.money_items if not x.hidden and x.repeats]) * 4, 50)
+        self.budget_display_pad = curses.newpad(len([x for x in self.finances.money_items if not x.hidden and not x.repeats]) + 6, 50)
         self.selected_index = 0
         self.top_of_page = 0
         self.bottom_of_page = self.top_of_page + curses.LINES - 6
@@ -71,7 +79,7 @@ class DisplayWindow(object):
 
     def draw_finances(self):
         line_count = 1
-        for key, item in enumerate(self.finances.money_items):
+        for key, item in enumerate([x for x in self.finances.money_items if not x.hidden and x.repeats]):
             if item.repeats and not item.hidden:
                 if key == self.selected_index:
                     self.finance_display_pad.addstr(line_count, 1, '> ({})'.format(key))
@@ -92,17 +100,25 @@ class DisplayWindow(object):
         elif (self.selected_index) * 4 < self.top_of_page:
             self.top_of_page -= 4
             self.bottom_of_page -= 4
-        self.finance_display_pad.refresh(self.top_of_page, 0, 1, 1, round_to_factor(curses.LINES - 6, 4), curses.COLS - 3)
+        self.finance_display_pad.refresh(self.top_of_page, 0, 1, 1, round_to_factor(curses.LINES - 6, 4), self.middle - 1)
 
     def draw_budget(self):
         self.budget_display_pad.addstr(1, 2, 'Monthly Budget: ', curses.A_BOLD)
         self.budget_display_pad.addstr('{:.2f}'.format(self.finances.calculate_monthly()))
         self.budget_display_pad.addstr(3, 2, 'Weekly Budget: ', curses.A_BOLD)
         self.budget_display_pad.addstr('{:.2f}'.format(self.finances.calculate_weekly()))
+        self.budget_display_pad.addstr(5, 2, '{:<15}{:<15}'.format('Item', 'Amount'), curses.A_BOLD)
+        line_count = 6
+        for key, item in enumerate(self.finances.money_items):
+            if not item.repeats and not item.hidden:
+                if item.amount < 0:
+                    self.budget_display_pad.addstr(line_count, 2, '{:<15}{:<15}'.format(item.label, item.amount), curses.color_pair(2))
+                else:
+                    self.budget_display_pad.addstr(line_count, 2, '{:<15}{:<15}'.format(item.label, item.amount), curses.color_pair(3))
         self.budget_display_pad.refresh(0, 0, 1, self.middle + 1, curses.LINES - 5, curses.COLS - 3)
 
     def increment_selection(self):
-        if self.selected_index == len(self.finances.money_items) - 1:
+        if self.selected_index == len([x for x in self.finances.money_items if not x.hidden and x.repeats]) - 1:
             pass
         else:
             self.selected_index += 1
@@ -112,6 +128,22 @@ class DisplayWindow(object):
             pass
         else:
             self.selected_index -= 1
+
+    def resize(self):
+        self.title_win.resize(curses.LINES - 4, curses.COLS)
+        self.title_win.clear()
+        self.title_win.border()
+        self.middle = int(curses.COLS / 2)
+        for i in range(1, curses.LINES - 5):
+            self.title_win.addch(i, self.middle, curses.ACS_VLINE)
+        self.title_win.addch(0, self.middle, curses.ACS_TTEE)
+        self.title_win.addch(curses.LINES - 5, self.middle, curses.ACS_BTEE)
+        self.title_win.addch(curses.LINES - 5, 0, curses.ACS_LTEE)
+        self.title_win.addch(curses.LINES - 5, curses.COLS - 2, curses.ACS_RTEE)
+        self.finance_display_pad.resize(len([x for x in self.finances.money_items if not x.hidden and x.repeats]) * 4, 50)
+        self.budget_display_pad.resize(len([x for x in self.finances.money_items if not x.hidden and not x.repeats]) + 6, 50)
+        self.finance_display_pad.clear()
+        self.finance_display_pad.clear()
 
 class CommandWindow(object):
 
@@ -154,6 +186,12 @@ class CommandWindow(object):
         elif self.selected_screen == 1:
             self._commands = self._commands_budget
         self.command_page = 0
+
+    def resize(self):
+        self.command_win.resize(5, curses.COLS)
+        self.command_win.clear()
+        self.command_win.border(0, 0, 0, 0, curses.ACS_LTEE, curses.ACS_RTEE, 0, 0)
+        self.command_win.addch(0, int(curses.COLS / 2), curses.ACS_BTEE)
 
 if __name__ == '__main__':
     curses.wrapper(main)
